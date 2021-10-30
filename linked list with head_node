@@ -1,0 +1,248 @@
+ #include <stdio.h>
+ #include <stdlib.h> // exit()
+
+ typedef int ElemType;
+ typedef int Boolean; // Boolean是布尔类型,其值是TRUE或FALSE
+
+ #define TRUE 1
+ #define FALSE 0
+
+ /**********************************************************/
+ /*              线性表的单链表存储结构                    */
+ /**********************************************************/
+ typedef struct LNode
+ {
+	 ElemType data;
+	 struct LNode *next;
+ }LNode, *LinkList;        // 教材上的定义
+
+ /*
+ struct LNode
+ {
+	 ElemType data;
+	 LNode *next;
+ };
+ typedef LNode *LinkList; // 另一种定义LinkList的方法
+ */
+
+ /**********************************************************/
+ /*          带头结点的单链表的基本操作(12个)              */
+ /**********************************************************/
+ void InitList_L(LinkList &L)
+ { // 操作结果：构造一个空的线性表L------------------------------------------------1
+   //L = (LinkList)malloc(sizeof(LNode)); // 产生头结点,并使L指向此头结点
+	 L = new LNode;
+	 if(!L) // 存储分配失败
+		 exit(-1);
+	 L->next = NULL; // 指针域为空
+ }
+
+ void DestroyList_L(LinkList &L)
+ { // 初始条件：线性表L已存在。操作结果：销毁线性表L（释放包括头结点在内的所有结点的存储空间）------2
+	 LinkList q;
+	 while(L)
+	 {
+		 q = L->next;
+		 free(L);
+		 L = q;
+	 }
+ }
+
+ void ClearList_L(LinkList L)
+ { // 初始条件：线性表L已存在。操作结果：将L重置为空表------------------------------3
+	 LinkList p,q;
+	 p = L->next; // p指向第一个结点
+	 while(p) // 没到表尾
+	 {
+		 q = p->next;
+		 free(p);
+		 p = q;
+	 }
+	 L->next = NULL; // 头结点指针域为空
+ }
+
+ Boolean ListEmpty_L(LinkList L)
+ { // 初始条件：线性表L已存在。操作结果：若L为空表，则返回TRUE，否则返回FALSE---------------4
+	 if(L->next) // 非空
+		 return FALSE;
+	 else
+		 return TRUE;
+ }
+
+ int ListLength_L(LinkList L) // 算法2.14
+ { // 初始条件：线性表L已存在。操作结果：返回L中数据元素个数--------------------------------5
+	 LinkList p = L->next; // p指向第一个结点
+	 int k = 0;
+	 while(p) // 没到表尾
+	 {
+		 k++;
+		 p = p->next;
+	 }
+	 return k;
+ }
+
+ void GetElem_L(LinkList L,int i,ElemType &e)
+ { // L为带头结点的单链表的头指针。当第i个元素存在时,其值赋给e-----------------------------6
+	 int j; // j为计数器
+	 LinkList p;
+
+	 if(i < 1)
+	 {
+		 printf("i小于1，不合法！\n");
+		 exit(-1);
+	 }
+
+	 p = L->next; // p指向第一个结点
+	 j = 1;
+	 while(p && j<i) // 顺指针向后查找,直到p指向第i个元素或p为空
+	 {
+		 p = p->next;
+		 j++;
+	 }
+	 if(!p) // 第i个元素不存在
+	 {
+		 printf("第i个元素不存在！\n");
+		 exit(-1);
+	 }
+	 e = p->data; // 取第i个元素
+ }
+
+ LNode* LocateElem_L(LinkList L,ElemType e)  // 算法2.15
+ {    // 在 L 所指的链表中查找第一个值和 e 相等的数据元素，若存在，则返回-----------------------7
+      // 它在链表中的位置，即指向该数据元素所在结点的指针；否则返回 NULL
+      LinkList p = L->next;
+      while ( p && p->data!=e )
+		  p = p->next;
+      return p;
+ }
+
+ void PriorElem_L(LinkList L,ElemType cur_e,ElemType &pre_e)
+ { // 初始条件: 线性表L已存在--------------------------------------------------------------------8
+   // 操作结果: 若cur_e是L的数据元素,且不是第一个,则用pre_e返回它的前驱;否则操作失败,pre_e无定义
+	 LinkList q, p = L->next; // p指向第一个结点
+	 while(p && p->next) // p非空指针(针对第一个结点非空的要求)且p所指结点有后继
+	 {
+		 q = p->next; // q为p的后继
+		 if(q->data == cur_e)
+		 {
+			 pre_e = p->data;
+			 exit(0);
+		 }
+		 p = q; // p向后移
+	 }
+	 printf("无所要查找的前驱元素！\n");
+ }
+
+ void NextElem_L(LinkList L,ElemType cur_e,ElemType &next_e)
+ { // 初始条件：线性表L已存在------------------------------------------------------------------------------9
+   // 操作结果：若cur_e是L的数据元素，且不是最后一个，则用next_e返回它的后继;否则操作失败，next_e无定义
+	 LinkList p = L->next; // p指向第一个结点
+	 while(p && p->next) // p非空指针(针对第一个结点非空的要求)且p所指结点有后继
+	 {
+		 if(p->data == cur_e)
+		 {
+			 next_e = p->next->data;
+			 exit(0);
+		 }
+		 p = p->next;
+	 }
+	 printf("无所要查找的后继元素！\n");
+ }
+
+ void ListInsert_L( LinkList L, LNode *p, LNode *s ) // 算法2.16修改。另，无论怎么插入，头指针L不会改变，故不加&符号
+ { // 指针 p 指向 L 为头指针的链表中某个结点，将 s 结点插入到 p 结点之前--------------------------------10-1
+   // 教材算法2.16无头结点，故要考虑插入位置在第一个结点之前的情况
+   // 下述算法有头结点，故无需考虑这种情况
+	 LNode *q = L;
+
+	 while (q->next != p )
+		 q = q->next;   // 查找 p 的前驱结点 q
+	 q->next = s;
+	 s->next = p;           // 在链表中 q 结点之后插入 s 结点
+ } // ListInsert_L
+
+ void ListInsert_L_E(LinkList L,int i,ElemType e) // 算法2.16扩充
+ { // 在带头结点的单链线性表L中第i个位置之前插入元素e，1<=i<=Listlength(L)+1----------------------------10-2
+   // 本算法可以理解为算法6 GetElem_L的一种修改，即查找的不是第i个结点而是第i-1个结点
+   // 且查找的对象包括头结点在内，头结点的序号为0
+	 LinkList p = L, q;       // p指向要查找的第i个结点的前驱结点，初值为头结点
+	 int  j = 0;              // j为计数器，从0开始对p计数（即从头结点开始计数）
+
+	 if(i < 1)
+	 {
+		 printf("i小于1，插入位置不合法！\n");
+		 exit(-1);
+	 }
+
+	 while(p && j<i-1)       // 从头结点开始向后查找,直到p指向第i-1个元素或p为空
+	 {
+		 p = p->next;
+		 j++;
+	 }
+	 if(!p) // p最多只能到链表的最后一个结点，此时p为链尾后的空指针，j==Listlength(L)，但i>Listlength(L)+1
+	 {
+		 printf("i>Listlength(L)+1，插入位置不合法！\n");
+		 exit(-1);
+	 }
+
+	 q = new LNode; // 生成新结点
+	 q->data = e; // 插入L中
+	 q->next = p->next;
+	 p->next = q;
+ }
+
+ void ListDelete_L( LinkList L, LNode* p, ElemType &e ) // 算法 2.17修改
+ { // p指向L为头指针的链表中某个结点，从链表中删除该结点并由e返回其元素---------------------------------11-1
+   // 教材算法2.17无头结点，故要考虑删除位置是第一个结点的情况
+   // 下述算法有头结点，故无需考虑这种情况
+	 LNode *q = L;
+
+	 while (q->next != p )
+		 q = q->next;              // 查找 p 的前驱结点 q
+	 q->next = p->next;           // 修改 q 结点的指针域
+	 e = p->data;
+	 delete p;                     // 返回被删结点的数据元素，并释放结点空间
+ }// ListDelete_L
+
+ void ListDelete_L_E(LinkList L,int i,ElemType &e) // 算法2.17扩充
+ { // 在带头结点的单链线性表L中，删除第i个元素,并由e返回其值，1<=i<=Listlength(L)-----------------------11-2
+   // 本算法可以理解为算法6 GetElem_L的一种修改，即查找的不是第i个结点而是第i-1个结点
+   // 且查找的对象包括头结点在内，头结点的序号为0
+	 LinkList p = L, q;       // p指向要删除的第i个结点的前驱结点，初值为头结点
+	 int  j = 0;              // j为计数器，从0开始对p计数（即从头结点开始计数）
+
+	 if(i < 1)
+	 {
+		 printf("i小于1，删除位置不合法！\n");
+		 exit(-1);
+	 }
+
+	 while(p && j<i-1)       // 从头结点开始向后查找,直到p指向第i-1个元素或p为空
+	 {
+		 p = p->next;
+		 j++;
+	 }
+	 if(!p->next || !p)      // p最多只能到链表的倒数第二个结点，此时p已到链尾或为链尾的空指针
+	 {
+		 printf("i>Listlength(L)，删除位置不合法！\n");
+		 exit(-1);
+	 }
+
+	 q = p->next; // 删除并释放结点
+	 p->next = q->next;
+	 e = q->data;
+	 free(q);
+ }
+
+ void ListTraverse_L(LinkList L)
+ { // 初始条件：线性表L已存在---------------------------------------12
+   // 操作结果:依次输出L中的每个数据
+	 LinkList p = L->next;
+	 while(p)
+	 {
+		 printf("%d ",(p->data));
+		 p = p->next;
+	 }
+ }
+
+
