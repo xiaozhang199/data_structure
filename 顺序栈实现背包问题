@@ -1,0 +1,133 @@
+//顺序栈的基本操作及实现简单背包
+#include <bits/stdc++.h>
+
+using namespace std;
+
+const int Stacksize = 20;
+const int Stackincrement = 10;
+
+typedef struct _stack
+{
+    int *volume;
+    int top;
+    int stacksize;
+    int stackincrement;
+}sqstack;
+
+//扩展顺序栈的空间
+sqstack expand(sqstack &S)
+{
+    S.stacksize += S.stackincrement;
+    sqstack mid;
+    mid.volume = new int[S.stacksize];
+    int i;
+    for(i = 0;i < S.stacksize;i++)
+        mid.volume[i] = S.volume[i];
+    mid.stacksize = S.stacksize;
+    mid.stackincrement = S.stackincrement;
+    mid.top = S.top;
+    return mid;
+}
+
+//构造一个空的顺序栈S
+void initstack(sqstack &S)
+{
+    S.volume = new int[S.stacksize];
+    S.top = -1;
+    S.stacksize = Stacksize;
+    S.stackincrement = Stackincrement;
+}
+
+//销毁顺序栈S
+void destroy(sqstack &S)
+{
+    delete []S.volume;
+}
+
+//将顺序栈S重置为空栈
+void clearlist(sqstack &S)
+{
+    S.volume = NULL;
+    S.top = -1;
+    S.stacksize = 0;
+    S.stackincrement = 0;
+}
+
+//判断顺序栈是否为空
+bool stackempty(sqstack &S)
+{
+    if(S.top == -1 )
+        return true;
+    else
+        return false;
+}
+
+//用e返回S中栈顶元素
+bool gettop(sqstack &S,int &e)
+{
+    if(S.top == -1) return false;
+    e = S.volume[S.top];
+    return true;
+}
+
+//在栈顶插入元素e
+void push(sqstack &S,int e)
+{
+    if(S.top >= S.stacksize-1)
+        S = expand(S);
+    S.volume[++S.top] = e;
+}
+
+//删除栈顶元素并用e返回其值
+bool pop(sqstack &S,int &e)
+{
+    if(S.top == -1) return false;
+    e = S.volume[S.top--];
+    return true;
+}
+
+//倒序输出物体的体积
+void stacktraverse(sqstack &S)
+{
+    int e;
+    int j = 0;
+    cout <<"找到一组解（物品序号）：" ;
+    while(j <= S.top) cout<< S.volume[j++]+1<< " ";
+    cout << endl;
+}
+
+//简单背包算法:栈中存放的是物品的下标，便于表示放入下一个物品
+void easybag(int w[],int t,int n){
+    sqstack S;
+    initstack(S);
+    int k = 0;//记录放入背包的物品数
+    do{
+        while(t > 0 && k < n){
+            if(t - w[k] >= 0){
+                push(S,k);
+                t -= w[k];
+            }
+            k++;
+        }
+        if(t == 0)  {stacktraverse(S);}
+        pop(S,k);
+        t += w[k];
+        k++;
+    }while(!stackempty(S)||k < n);
+}
+
+int main()
+{
+
+    int n;cout << "输入物体个数n = ";cin >> n;
+
+    cout << "请输入每个物品的体积："<< endl;;
+    int *w = (int *)malloc(n*sizeof(int));
+    for(int i = 0;i < n;i++){
+        cout << "第" << i+1 << "个物品的体积=";cin >> w[i];
+    }
+
+    int t;cout << "输入背包总体积t = ";cin >> t;
+    easybag(w,t,n);
+    return 0;
+}
