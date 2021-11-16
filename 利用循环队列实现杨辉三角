@@ -1,0 +1,93 @@
+#include<bits/stdc++.h>
+
+using namespace std;
+const int maxsize = 100;
+const int queueincrecement = 10;
+
+typedef struct _queue{
+    int *elem;
+    int front;
+    int rear;
+    int queuesize;
+    int increment;
+}sqqueue;
+
+//初始化循环队列
+void initqueue(sqqueue &Q,int Maxsize = maxsize,int Queueincrecement = queueincrecement){
+    Q.elem = (int *)malloc(sizeof(Maxsize+1));
+    Q.queuesize = Maxsize+1;
+    Q.increment = Queueincrecement;
+    Q.front = Q.rear = 0;
+}
+
+//扩展循环队列的元素个数
+void increcement(sqqueue &Q){
+
+
+    int *a = new int[Q.queuesize+Q.increment];
+    for(int k = 0; k < Q.queuesize;k++)
+        a[k] = Q.elem[(Q.front+k)%Q.queuesize];
+    delete [] Q.elem;
+    Q.elem = a;
+    Q.queuesize += Q.increment;
+    Q.front = 0;
+    Q.rear = Q.queuesize-1;
+}
+
+//返回循环队列中的元素个数
+int queuelength(sqqueue Q){
+    return (Q.rear + Q.queuesize - Q.front)%Q.queuesize;
+}
+
+//删除对头元素并用e返回其值
+bool dequeue(sqqueue &Q,int &e){
+    if(Q.front == Q.rear) return false;
+    e = Q.elem[Q.front];
+    Q.front = (Q.front+1)%Q.queuesize;
+    return true;
+}
+//取对头元素的值
+bool gethead(sqqueue Q,int &s){
+    if(Q.rear == Q.front) return false;
+    s = Q.elem[Q.front];
+    return true;
+}
+//插入值为e的队尾元素
+void enqueue(sqqueue &Q,int e){
+    if((Q.rear+1)%Q.queuesize == Q.front) increcement(Q);
+    Q.elem[Q.rear] = e;
+    Q.rear = (Q.rear+1)%Q.queuesize;
+}
+//打印杨辉三角
+void yanghui(int n)
+{
+    sqqueue Q;
+    int s,e;//取对头元素的值和删除对头
+    for(int i = 1;i <= n;i++) cout << ' ';cout << 1 << endl;
+    initqueue(Q,n+3);
+    enqueue(Q,0);enqueue(Q,1);enqueue(Q,1);
+    int k = 1;
+    while(k < n){
+        for(int i = 1;i <= n-k;i++) cout << ' ';
+        enqueue(Q,0);
+        do{
+            dequeue(Q,s);
+            gethead(Q,e);
+            if(e) cout << e << ' ';
+            else cout << endl;
+            enqueue(Q,s+e);
+        }while(e != 0);//不等于下一行行首
+        k++;
+    }
+    dequeue(Q,e);
+    while(queuelength(Q) != 0){dequeue(Q,e); cout << e << ' ';}
+}
+
+
+int main()
+{
+    int n;
+    cout << "Please input the number of row:";cin >> n;
+    yanghui(n);
+    return 0;
+}
