@@ -1,0 +1,81 @@
+#include<bits/stdc++.h>
+
+using namespace std;
+
+int mat[25][25];
+int n,m,maxlen,jpos;
+char *sub,str1[25],str2[25];
+
+void substring(char *str){
+    char *p;
+    int k = maxlen;
+    sub = new char[maxlen+1];
+    p = str+jpos;
+    while(k){
+        *sub++ = *p++;
+        k--;
+    }
+    *sub = '\0';
+    sub = sub-maxlen;
+}
+
+
+void diagscan(int i,int j){
+    int flag = 0,len = 0,sj;//flag:标志变量；sj:记录当前列下标
+    while(i < n && j < m){
+        if(mat[i][j] == 1){
+            len++;
+            if(!flag){
+                sj = j;
+                flag = 1;
+            }
+        }
+        else if(flag){
+            if(len > maxlen){
+                maxlen = len;
+                jpos = sj;
+            }
+            len = 0;flag = 0;
+        }
+        i++;j++;
+    }
+}
+
+void diagmax(){
+    maxlen = 0;jpos = -1;
+    int istart = 0;//第一对角线元素起始行下标
+    for(int k = 1-m;k <= n-1;k++){//从右上角到左下角；虽然是从下标为0的元素开始查起，但1-m而不是-m是因为m从1开始，而下标从0开始
+        int i = istart;
+        int j = i-k;
+        diagscan(i,j);
+        if(k >= 0)
+            istart++;
+    }
+}
+
+void maxsamesubstring(char *str1,char *str2){
+    char *p1 = str1;char *p2 = str2;
+    n = strlen(str1),m = strlen(str2);
+    for(int i = 0;i < n;i++)
+        for(int j = 0;j < m;j++){
+            if(*(p1+i) == *(p2+j))
+                mat[i][j] = 1;
+            else
+                mat[i][j] = 0;
+        }
+
+    diagmax();
+
+    if(maxlen == 0) *sub = '\0';
+    else substring(str2);
+}
+
+int main()
+{
+    char str1[25],str2[25];
+    cin >> str1 >> str2;
+    maxsamesubstring(str1,str2);
+    cout << "所求最大公共子串：" << sub << endl;
+    return 0;
+}
+
