@@ -5,8 +5,8 @@ int merge(int a[],int l,int mid,int r)
 {
 	int l_len= mid - l;
 	int r_len= r-mid-1;
-	int l_a[l_len];
-	int r_a[r_len];
+	int l_a[l_len+1];
+	int r_a[r_len+1];
 	int i,j,k;
 	for(i = 0;i <= l_len;i++)
 		l_a[i] = a[i+l];
